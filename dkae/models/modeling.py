@@ -13,13 +13,13 @@ import math
 import numpy as np
 
 logger = logging.getLogger("lwat")
-newwikivec = np.load(r"/root/autodl-fs/HiLAT-main/data/newwikivec.npy", allow_pickle=True)
+newwikivec = np.load(r"../newwikivec.npy", allow_pickle=True)
 wikivec = torch.FloatTensor(newwikivec).to('cuda:0')  # wikipedia_konwledge
-co_icd_matrix = pickle.load(open(r'/root/autodl-fs/HiLAT-main/data/cooccurrence_50x50_01.pkl', "rb"))
+co_icd_matrix = pickle.load(open(r'../drug.pkl', "rb"))
 drug = co_icd_matrix.values
 icd_drug = torch.FloatTensor(drug).to('cuda:0')
 # icd_drug = F.normalize(icd_drug, dim=-1)
-# print("类型是",type(icd_drug))
+
 
 
 class CodingModelConfig:
@@ -133,23 +133,23 @@ class GCN(nn.Module):
 
         return node_embedding
     
-class ContextAwareBiGate(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(ContextAwareBiGate, self).__init__()
-        self.linear_forward = nn.Linear(input_size, output_size)
-        self.linear_backward = nn.Linear(input_size, output_size)
-        self.context_attention = nn.Linear(input_size, 1)
+# class ContextAwareBiGate(nn.Module):
+#     def __init__(self, input_size, output_size):
+#         super(ContextAwareBiGate, self).__init__()
+#         self.linear_forward = nn.Linear(input_size, output_size)
+#         self.linear_backward = nn.Linear(input_size, output_size)
+#         self.context_attention = nn.Linear(input_size, 1)
 
-    def forward(self, input, context):
-        forward_gate = torch.sigmoid(self.linear_forward(input)) #前向门 状态门
-        backward_gate = torch.sigmoid(self.linear_backward(input)) # 后向门 信息门
+#     def forward(self, input, context):
+#         forward_gate = torch.sigmoid(self.linear_forward(input)) #前向门 状态门
+#         backward_gate = torch.sigmoid(self.linear_backward(input)) # 后向门 信息门
 
-        context_weights = F.softmax(self.context_attention(context), dim=1)
-        context_forward = torch.matmul(context_weights.transpose(1, 2), input)
-        context_backward = torch.matmul(context_weights.flip(dims=[2]).transpose(1, 2), input)
+#         context_weights = F.softmax(self.context_attention(context), dim=1)
+#         context_forward = torch.matmul(context_weights.transpose(1, 2), input)
+#         context_backward = torch.matmul(context_weights.flip(dims=[2]).transpose(1, 2), input)
 
-        output = input * forward_gate + context_backward * backward_gate
-        return output    
+#         output = input * forward_gate + context_backward * backward_gate
+#         return output    
     
 class LableWiseAttentionLayer(torch.nn.Module):
     def __init__(self, coding_model_config, args):
@@ -195,8 +195,6 @@ class LableWiseAttentionLayer(torch.nn.Module):
         # output: (batch_size, max_seq_length, transformer_hidden_size)
         # Z = Tan(WH)
         l1_output = self.tanh(self.l1_linear(x))
-#         print("l1_weight的权重是",self.l1_linear.weight.shape)
-#         print("l1_output的尺寸是",l1_output.shape)
         # softmax(UZ)
         # l2_linear output shape: (batch_size, max_seq_length, num_labels)
         # attention_weight shape: (batch_size, num_labels, max_seq_length)
@@ -267,13 +265,11 @@ class WikiWiseAttentionLayer(torch.nn.Module):
         # input: (batch_size, max_seq_length, transformer_hidden_size)
         # output: (batch_size, max_seq_length, transformer_hidden_size)? (batch_size, num_labels, transformer_hidden_size)
         # Z = Tan(WH) l1_weight的权重是 torch.Size([768, 768]),l1_output的尺寸是 torch.Size([2, 512, 768])
-#         drug_icd_embeddings = self.drug_icd_gcn(icd_drug)
-#         print("drug_icd_embeddings的大小是",drug_icd_embeddings.shape) #(50,768)
+
         l1_output = self.tanh(self.wiki2(wikivec))
         l1_output = self.tanh(self.wiki1(l1_output.transpose(0, 1)))
 
-#         print("l1_weight的权重是",self.l1_linear.weight.shape)
-#         print("l1_output的尺寸是",l1_output.shape)
+
         # softmax(UZ)
         # l2_linear output shape: (batch_size, max_seq_length, num_labels)
         # attention_weight shape: (batch_size, num_labels, max_seq_length)
@@ -283,24 +279,6 @@ class WikiWiseAttentionLayer(torch.nn.Module):
         attention_output = torch.matmul(attention_weight, x)
 
         return attention_output, attention_weight
-
-#     def forward(self, x): # [2, 512, 768]----[2, 50, 768]
-#         # input: (batch_size, max_seq_length, transformer_hidden_size)
-#         # output: (batch_size, max_seq_length, transformer_hidden_size)? (batch_size, num_labels, transformer_hidden_size)
-#         # Z = Tan(WH) l1_weight的权重是 torch.Size([768, 768]),l1_output的尺寸是 torch.Size([2, 512, 768])
-#         drug_icd_embeddings = self.drug_icd_gcn(icd_drug)
-#         print("drug_icd_embeddings的大小是",drug_icd_embeddings.shape) #(50,768)
-#         l1_output = self.tanh(self.l1_linear(x))
-# #         print("l1_weight的权重是",self.l1_linear.weight.shape)
-#         print("l1_output的尺寸是",l1_output.shape)
-#         # softmax(UZ)
-#         # l2_linear output shape: (batch_size, max_seq_length, num_labels)
-#         # attention_weight shape: (batch_size, num_labels, max_seq_length)
-#         attention_weight = self.softmax((l1_output.matmul(drug_icd_embeddings))).transpose(1, 2)
-#         # attention_output shpae: (batch_size, num_labels, transformer_hidden_size)
-#         attention_output = torch.matmul(attention_weight, x)
-
-#         return attention_output, attention_weight
 
 
 class ChunkAttentionLayer(torch.nn.Module):
@@ -439,10 +417,7 @@ class CodingModel(torch.nn.Module):
                 attention_layer = self.label_wise_attention_layer
                 drug_layer = self.drug_wise_attention_layer
                 wiki_layer = self.wiki_wise_attention_layer
-                # 上面定义attention_layer为标签注意力，下面对每一个chunk使用标签注意力
-                # l2_dropout是整个chunk的文本表示，维度是[2, 10, 512, 768]，l2_dropout[:, i, :]的操作是获得每一个chunk，torch.Size([2, 512, 768])
-#             print("chunk的维度是",l2_dropout.shape)
-#             print((l2_dropout[:, i, :].shape))
+      
             l3_attention, attention_weight = attention_layer(l2_dropout[:, i, :])
             
             l3_drug_attention, drug_attention_weight = drug_layer(l2_dropout[:, i, :])
@@ -488,7 +463,6 @@ class CodingModel(torch.nn.Module):
                     chunk_attention = self.chunk_attention_layer[i]
                 else:
                     chunk_attention = self.chunk_attention_layer
-#                 print("11111111",l3_dropout[:, :, i].shape),从[2, 10, 50, 768]变成[2, 10, 768]，两个注意力都是对中间维度做注意力,
                 l4_chunk_attention, l4_chunk_attention_weights = chunk_attention(l3_dropout[:, :, i]) # l4_chunk_attention[2, 1, 768]
                 chunk_attention_output.append(l4_chunk_attention.squeeze(dim=1))
                 chunk_attention_weights.append(l4_chunk_attention_weights.squeeze(dim=1))
