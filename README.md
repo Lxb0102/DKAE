@@ -19,5 +19,5 @@ python3 dkae/data/mimic3_data_preparer.py \
 python3 dkae/run_coding.py config.json
 
 ## Acknowledgement
-We appreciate for all code providers, especially for HiLAT(https://github.com/leiboliu/HiLAT/)
+We appreciate for all code providers, especially for KSI(https://github.com/tiantiantu/KSI), HiLAT(https://github.com/leiboliu/HiLAT/)
 
