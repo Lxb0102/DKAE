@@ -1,4 +1,4 @@
-# Does Knowledge Matter? Dual Knowledge Attention Enhancement Network for Medical Code Prediction
+#  Dual Knowledge Attention Enhancement Network for Medical Code Prediction
 
 ## Prerequisites
 Restore [MIMIC-III v1.4 data](https://physionet.org/content/mimiciii/1.4/) into a Postgres database. 
