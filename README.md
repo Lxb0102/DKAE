@@ -8,6 +8,7 @@ Restore [MIMIC-III v1.4 data](https://physionet.org/content/mimiciii/1.4/) into 
 
 ## Training data preparation
 The source of data processing  and dataset partitioning refer to CAML (https://github.com/jamesmullenbach/caml-mimic?tab=readme-ov-file).
+
 python3 dkae/data/mimic3_data_preparer.py \
     --data_output_dir=your_data_dir \
     --pre_process_level=level_1 \
