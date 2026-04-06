@@ -1,4 +1,4 @@
-Please download the following files into this folder from https://github.com/aehrc/LAAT/tree/master/data/mimicdata/mimic3
+Please download the following files into this folder from mimic3 and mimic2 database.
 
 train_full_hadm_ids.csv
 dev_full_hadm_ids.csv
