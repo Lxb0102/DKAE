@@ -4,7 +4,7 @@
   "output_dir": "./model/",
   "overwrite_output_dir": true,
 
-  "task_name": "mimic3-50",
+  "task_name": "mimic3-50", # mimic2-full
   "max_seq_length": 512,
   "train_file": "../data/50/train_data_50_level_1.csv",
   "validation_file": "../data/50/dev_data_50_level_1.csv",
