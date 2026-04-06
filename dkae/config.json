@@ -1,5 +1,5 @@
 {
-  "model_name_or_path": "/root/autodl-fs/HiLAT-main/hilat/ClinicalplusXLNet/",
+  "model_name_or_path": "/root/autodl-fs/dkae-main/dkae/ClinicalplusXLNet/",
   "tokenizer_name": "xlnet-base-cased",
   "output_dir": "./model/",
   "overwrite_output_dir": true,
